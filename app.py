@@ -13,15 +13,11 @@ def count_matches(text, *terms):
     return sum(1 for line in text.splitlines() if all(term.lower() in line.lower() for term in terms))
 
 def process_op_sheet(key_df, target_df, lab_text):
-    if "typ zásypu" not in key_df.columns:
-        st.error("Ve vstupním listu chybí sloupec 'typ zásypu'.")
-        return target_df
-
     for i, row in target_df.iterrows():
-        typ = row.get("Typ zásypu")
+        typ = row.get(row.index[0])  # první sloupec = identifikace typu zásypu
         if pd.isna(typ):
             continue
-        matches = key_df[key_df["typ zásypu"] == typ]
+        matches = key_df[key_df.iloc[:, 0] == typ]
         count = 0
         for _, match_row in matches.iterrows():
             konstrukce = match_row.get("konstrukční prvek", "")
