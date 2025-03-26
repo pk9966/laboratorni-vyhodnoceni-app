@@ -55,7 +55,7 @@ if pdf_file and xlsx_file:
 
     xls = pd.ExcelFile(xlsx_file)
 
-    op1_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP1 ")
+    op1_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP1")
     op2_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP2")
     cely_key = pd.read_excel(xls, sheet_name="seznam zkoušek Celý objekt")
 
