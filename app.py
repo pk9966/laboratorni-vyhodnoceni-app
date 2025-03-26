@@ -14,19 +14,19 @@ def count_matches(text, *terms):
 
 def process_op_sheet(key_df, target_df, lab_text):
     for i, row in target_df.iterrows():
-        typ = row["Typ zásypu"]
+        typ = row.get("Typ zásypu")
         if pd.isna(typ):
             continue
-        matches = key_df[(key_df["typ zásypu"] == typ)]
+        matches = key_df[key_df.get("typ zásypu") == typ]
         count = 0
         for _, match_row in matches.iterrows():
-            konstrukce = match_row["konstrukční prvek"]
-            zkouska = match_row["druh zkoušky"]
-            staniceni = str(match_row["staničení"])
-            if pd.notna(konstrukce) and pd.notna(zkouska) and pd.notna(staniceni):
+            konstrukce = match_row.get("konstrukční prvek", "")
+            zkouska = match_row.get("druh zkoušky", "")
+            staniceni = str(match_row.get("staničení", ""))
+            if konstrukce and zkouska and staniceni:
                 count += count_matches(lab_text, konstrukce, zkouska, staniceni)
         target_df.at[i, "D"] = count
-        pozadovano = target_df.at[i, "C"]
+        pozadovano = row.get("C")
         if pd.notna(pozadovano):
             if count >= pozadovano:
                 target_df.at[i, "E"] = "Vyhovující"
@@ -36,13 +36,13 @@ def process_op_sheet(key_df, target_df, lab_text):
 
 def process_cely_objekt_sheet(key_df, target_df, lab_text):
     for i, row in target_df.iterrows():
-        material = row["materiál"]
-        zkouska = row["druh zkoušky"]
+        material = row.get("materiál")
+        zkouska = row.get("druh zkoušky")
         if pd.isna(material) or pd.isna(zkouska):
             continue
         count = count_matches(lab_text, material, zkouska)
         target_df.at[i, "C"] = count
-        pozadovano = row["B"]
+        pozadovano = row.get("B")
         if pd.notna(pozadovano):
             if count >= pozadovano:
                 target_df.at[i, "D"] = "Vyhovující"
