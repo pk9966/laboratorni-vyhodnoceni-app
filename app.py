@@ -7,65 +7,79 @@ st.set_page_config(page_title="Vyhodnocení laboratorního deníku")
 st.title("Vyhodnocení laboratorního deníku")
 
 pdf_file = st.file_uploader("Nahraj laboratorní deník (PDF)", type="pdf")
-xlsx_file = st.file_uploader("Nahraj PROMT.xlsx", type="xlsx")
+xlsx_file = st.file_uploader("Nahraj soubor Klíč.xlsx", type="xlsx")
 
-def build_mapping(typy_row, stanice_row):
-    mapping = {}
-    for col in typy_row.index:
-        typ = typy_row[col]
-        stanice = stanice_row[col]
-        if pd.notna(typ) and pd.notna(stanice):
-            mapping[typ.strip()] = stanice.strip()
-    return mapping
+def count_matches(text, *terms):
+    return sum(1 for line in text.splitlines() if all(term.lower() in line.lower() for term in terms))
 
-def count_tests(text, typ, staniceni, op_label):
-    search = f"{typ.lower()} {staniceni.lower()}"
-    return sum(
-        1 for line in text.splitlines()
-        if search in line and op_label.lower() in line
-    )
-
-def vypln_skutecnosti(df, lab_text, op1_mapping, op2_mapping):
-    for i, row in df.iterrows():
+def process_op_sheet(key_df, target_df, lab_text):
+    for i, row in target_df.iterrows():
         typ = row["Typ zásypu"]
         if pd.isna(typ):
             continue
-        typ = typ.strip()
-        if typ in op1_mapping:
-            df.at[i, "Skutečnost OP1"] = count_tests(lab_text, typ, op1_mapping[typ], "OP1")
-        if typ in op2_mapping:
-            df.at[i, "Skutečnost OP2"] = count_tests(lab_text, typ, op2_mapping[typ], "OP2")
-    return df
+        matches = key_df[(key_df["typ zásypu"] == typ)]
+        count = 0
+        for _, match_row in matches.iterrows():
+            konstrukce = match_row["konstrukční prvek"]
+            zkouska = match_row["druh zkoušky"]
+            staniceni = str(match_row["staničení"])
+            if pd.notna(konstrukce) and pd.notna(zkouska) and pd.notna(staniceni):
+                count += count_matches(lab_text, konstrukce, zkouska, staniceni)
+        target_df.at[i, "D"] = count
+        pozadovano = target_df.at[i, "C"]
+        if pd.notna(pozadovano):
+            if count >= pozadovano:
+                target_df.at[i, "E"] = "Vyhovující"
+            else:
+                target_df.at[i, "E"] = f"Chybí {abs(int(pozadovano - count))} zk."
+    return target_df
+
+def process_cely_objekt_sheet(key_df, target_df, lab_text):
+    for i, row in target_df.iterrows():
+        material = row["materiál"]
+        zkouska = row["druh zkoušky"]
+        if pd.isna(material) or pd.isna(zkouska):
+            continue
+        count = count_matches(lab_text, material, zkouska)
+        target_df.at[i, "C"] = count
+        pozadovano = row["B"]
+        if pd.notna(pozadovano):
+            if count >= pozadovano:
+                target_df.at[i, "D"] = "Vyhovující"
+            else:
+                target_df.at[i, "D"] = f"Chybí {abs(int(pozadovano - count))} zk."
+    return target_df
 
 if pdf_file and xlsx_file:
-    pdf = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    lab_text = "\n".join(page.get_text() for page in pdf).lower()
+    lab_text = "\n".join(page.get_text() for page in fitz.open(stream=pdf_file.read(), filetype="pdf"))
 
     xls = pd.ExcelFile(xlsx_file)
-    pm_df = pd.read_excel(xls, sheet_name="PM")
-    lm_df = pd.read_excel(xls, sheet_name="LM")
-    op1_df = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP1 ")
-    op2_df = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP2")
 
-    op1_mapping = build_mapping(op1_df.iloc[0], op1_df.iloc[2])
-    op2_mapping = build_mapping(op2_df.iloc[0], op2_df.iloc[2])
+    op1_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP1 ")
+    op2_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP2")
+    cely_key = pd.read_excel(xls, sheet_name="seznam zkoušek Celý objekt")
 
-    pm_df = vypln_skutecnosti(pm_df, lab_text, op1_mapping, op2_mapping)
-    lm_df = vypln_skutecnosti(lm_df, lab_text, op1_mapping, op2_mapping)
+    pm_op1 = pd.read_excel(xls, sheet_name="PM - OP1")
+    lm_op1 = pd.read_excel(xls, sheet_name="LM - OP1")
+    pm_op2 = pd.read_excel(xls, sheet_name="PM - OP2")
+    lm_op2 = pd.read_excel(xls, sheet_name="LM - OP2")
+    cely_objekt = pd.read_excel(xls, sheet_name="Celý objekt")
 
-    st.subheader("Výsledky pro list PM")
-    st.dataframe(pm_df)
-
-    st.subheader("Výsledky pro list LM")
-    st.dataframe(lm_df)
+    pm_op1 = process_op_sheet(op1_key, pm_op1, lab_text)
+    lm_op1 = process_op_sheet(op1_key, lm_op1, lab_text)
+    pm_op2 = process_op_sheet(op2_key, pm_op2, lab_text)
+    lm_op2 = process_op_sheet(op2_key, lm_op2, lab_text)
+    cely_objekt = process_cely_objekt_sheet(cely_key, cely_objekt, lab_text)
 
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-        pm_df.to_excel(writer, index=False, sheet_name="PM")
-        lm_df.to_excel(writer, index=False, sheet_name="LM")
-        op1_df.to_excel(writer, index=False, sheet_name="seznam zkoušek PM+LM OP1 ")
-        op2_df.to_excel(writer, index=False, sheet_name="seznam zkoušek PM+LM OP2")
+        pm_op1.to_excel(writer, index=False, sheet_name="PM - OP1")
+        lm_op1.to_excel(writer, index=False, sheet_name="LM - OP1")
+        pm_op2.to_excel(writer, index=False, sheet_name="PM - OP2")
+        lm_op2.to_excel(writer, index=False, sheet_name="LM - OP2")
+        cely_objekt.to_excel(writer, index=False, sheet_name="Celý objekt")
 
+    st.success("Vyhodnocení dokončeno. Stáhni výsledný soubor níže.")
     st.download_button(
         label="📥 Stáhnout výsledný Excel",
         data=output.getvalue(),
