@@ -56,21 +56,35 @@ if pdf_file and xlsx_file:
 
     xls = pd.ExcelFile(xlsx_file)
 
-    op1_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP1 ")
-    op2_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP2")
-    cely_key = pd.read_excel(xls, sheet_name="seznam zkoušek Celý objekt")
+    sheet_names = xls.sheet_names
 
-    pm_op1 = pd.read_excel(xls, sheet_name="PM - OP1")
-    lm_op1 = pd.read_excel(xls, sheet_name="LM - OP1")
-    pm_op2 = pd.read_excel(xls, sheet_name="PM - OP2")
-    lm_op2 = pd.read_excel(xls, sheet_name="LM - OP2")
-    cely_objekt = pd.read_excel(xls, sheet_name="Celý objekt")
+    def load_sheet(name):
+        if name in sheet_names:
+            return pd.read_excel(xls, sheet_name=name)
+        else:
+            st.error(f"Chybí list v Excelu: {name}")
+            return pd.DataFrame()
 
-    pm_op1 = process_op_sheet(op1_key, pm_op1, lab_text)
-    lm_op1 = process_op_sheet(op1_key, lm_op1, lab_text)
-    pm_op2 = process_op_sheet(op2_key, pm_op2, lab_text)
-    lm_op2 = process_op_sheet(op2_key, lm_op2, lab_text)
-    cely_objekt = process_cely_objekt_sheet(cely_key, cely_objekt, lab_text)
+    op1_key = load_sheet("seznam zkoušek PM+LM OP1")
+    op2_key = load_sheet("seznam zkoušek PM+LM OP2")
+    cely_key = load_sheet("seznam zkoušek Celý objekt")
+
+    pm_op1 = load_sheet("PM - OP1")
+    lm_op1 = load_sheet("LM - OP1")
+    pm_op2 = load_sheet("PM - OP2")
+    lm_op2 = load_sheet("LM - OP2")
+    cely_objekt = load_sheet("Celý objekt")
+
+    if not op1_key.empty and not pm_op1.empty:
+        pm_op1 = process_op_sheet(op1_key, pm_op1, lab_text)
+    if not op1_key.empty and not lm_op1.empty:
+        lm_op1 = process_op_sheet(op1_key, lm_op1, lab_text)
+    if not op2_key.empty and not pm_op2.empty:
+        pm_op2 = process_op_sheet(op2_key, pm_op2, lab_text)
+    if not op2_key.empty and not lm_op2.empty:
+        lm_op2 = process_op_sheet(op2_key, lm_op2, lab_text)
+    if not cely_key.empty and not cely_objekt.empty:
+        cely_objekt = process_cely_objekt_sheet(cely_key, cely_objekt, lab_text)
 
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
