@@ -13,11 +13,15 @@ def count_matches(text, *terms):
     return sum(1 for line in text.splitlines() if all(term.lower() in line.lower() for term in terms))
 
 def process_op_sheet(key_df, target_df, lab_text):
+    if "typ zásypu" not in key_df.columns:
+        st.error("Ve vstupním listu chybí sloupec 'typ zásypu'.")
+        return target_df
+
     for i, row in target_df.iterrows():
         typ = row.get("Typ zásypu")
         if pd.isna(typ):
             continue
-        matches = key_df[key_df.get("typ zásypu") == typ]
+        matches = key_df[key_df["typ zásypu"] == typ]
         count = 0
         for _, match_row in matches.iterrows():
             konstrukce = match_row.get("konstrukční prvek", "")
@@ -55,7 +59,7 @@ if pdf_file and xlsx_file:
 
     xls = pd.ExcelFile(xlsx_file)
 
-    op1_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP1")
+    op1_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP1 ")
     op2_key = pd.read_excel(xls, sheet_name="seznam zkoušek PM+LM OP2")
     cely_key = pd.read_excel(xls, sheet_name="seznam zkoušek Celý objekt")
 
