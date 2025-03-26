@@ -18,9 +18,12 @@ def build_mapping(typy_row, stanice_row):
             mapping[typ.strip()] = stanice.strip()
     return mapping
 
-def count_tests(text, typ, staniceni):
+def count_tests(text, typ, staniceni, op_label):
     search = f"{typ.lower()} {staniceni.lower()}"
-    return text.count(search)
+    return sum(
+        1 for line in text.splitlines()
+        if search in line and op_label.lower() in line
+    )
 
 def vypln_skutecnosti(df, lab_text, op1_mapping, op2_mapping):
     for i, row in df.iterrows():
@@ -29,9 +32,9 @@ def vypln_skutecnosti(df, lab_text, op1_mapping, op2_mapping):
             continue
         typ = typ.strip()
         if typ in op1_mapping:
-            df.at[i, "Skutečnost OP1"] = count_tests(lab_text, typ, op1_mapping[typ])
+            df.at[i, "Skutečnost OP1"] = count_tests(lab_text, typ, op1_mapping[typ], "OP1")
         if typ in op2_mapping:
-            df.at[i, "Skutečnost OP2"] = count_tests(lab_text, typ, op2_mapping[typ])
+            df.at[i, "Skutečnost OP2"] = count_tests(lab_text, typ, op2_mapping[typ], "OP2")
     return df
 
 if pdf_file and xlsx_file:
