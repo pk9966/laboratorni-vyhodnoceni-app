@@ -1,0 +1,1 @@
+# laboratorni-vyhodnoceni-app
