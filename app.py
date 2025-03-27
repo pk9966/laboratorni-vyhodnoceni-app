@@ -42,7 +42,7 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
         line_lower = line.lower()
         konstrukce_ok = contains_similar(line_lower, konstrukce)
         stanice_ok = any(s in line_lower for s in staniceni)
-        zkouska_ok = any(z in line_lower for z in druhy_zk)any(z in text_zkouska for z in druhy_zk)
+        zkouska_ok = any(z in line_lower for z in druhy_zk)
 
         debug_status = f"⛔ | konstrukce_ok={konstrukce_ok}, zkouska_ok={zkouska_ok}, stanice_ok={stanice_ok}"
 
