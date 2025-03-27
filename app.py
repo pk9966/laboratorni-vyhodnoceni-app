@@ -3,8 +3,8 @@ st.set_page_config(page_title="Vyhodnocení laboratorního deníku")
 st.write("Streamlit import OK")
 import pandas as pd
 st.write("Pandas import OK")
-import pdfplumber
-st.write("pdfplumber import OK")
+import fitz  # PyMuPDF
+st.write("fitz (PyMuPDF) import OK")
 import io
 st.write("io import OK")
 from openpyxl import load_workbook
@@ -17,8 +17,9 @@ pdf_file = st.file_uploader("Nahraj laboratorní deník (PDF)", type="pdf")
 xlsx_file = st.file_uploader("Nahraj soubor Klíč.xlsx", type="xlsx")
 
 def extract_text_from_pdf(file):
-    with pdfplumber.open(file) as pdf:
-        return "\n".join(page.extract_text() or "" for page in pdf.pages)
+    with fitz.open(stream=file.read(), filetype="pdf") as doc:
+        return "
+".join(page.get_text() for page in doc)
 
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
