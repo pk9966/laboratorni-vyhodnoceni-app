@@ -9,30 +9,39 @@ st.title("Vyhodnocení laboratorního deníku")
 pdf_file = st.file_uploader("Nahraj laboratorní deník (PDF)", type="pdf")
 xlsx_file = st.file_uploader("Nahraj soubor Klíč.xlsx", type="xlsx")
 
-def count_matches(text, *terms):
-    return sum(1 for line in text.splitlines() if all(term.lower() in line.lower() for term in terms))
+def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
+    druhy_zk = [z.strip().lower() for z in str(zkouska_raw).split(",") if z.strip()]
+    staniceni = [s.strip().lower() for s in str(stanice_raw).split(",") if s.strip()]
+    return sum(
+        1 for line in text.splitlines()
+        if konstrukce.lower() in line.lower()
+        and any(z in line.lower() for z in druhy_zk)
+        and any(s in line.lower() for s in staniceni)
+    )
 
 def process_op_sheet(key_df, target_df, lab_text):
+    if "D" not in target_df.columns:
+        target_df["D"] = 0
+    if "E" not in target_df.columns:
+        target_df["E"] = ""
+
     for i in range(1, len(target_df)):
         row = target_df.iloc[i]
-        typ = row.iloc[0]
-        if pd.isna(typ):
+        zasyp = str(row.iloc[0])
+        if pd.isna(zasyp):
             continue
-        matches = key_df[key_df.iloc[:, 0].astype(str) == str(typ)]
-        count = 0
-        for _, match_row in matches.iterrows():
-            konstrukce = match_row.get("konstrukční prvek", "")
-            zkouska = match_row.get("druh zkoušky", "")
-            staniceni = str(match_row.get("staničení", ""))
-            if konstrukce and zkouska and staniceni:
-                count += count_matches(lab_text, konstrukce, zkouska, staniceni)
-        target_df.at[i, "D"] = count
+        matches = key_df[key_df.iloc[:, 0] == zasyp]
+        total_count = 0
+        for _, mrow in matches.iterrows():
+            konstrukce = mrow.get("konstrukční prvek", "")
+            zkouska = mrow.get("druh zkoušky", "")
+            stanice = mrow.get("staničení", "")
+            if konstrukce and zkouska and stanice:
+                total_count += count_matches_advanced(lab_text, konstrukce, zkouska, stanice)
+        target_df.at[i, "D"] = total_count
         pozadovano = row.get("C")
         if pd.notna(pozadovano):
-            if count >= pozadovano:
-                target_df.at[i, "E"] = "Vyhovující"
-            else:
-                target_df.at[i, "E"] = f"Chybí {abs(int(pozadovano - count))} zk."
+            target_df.at[i, "E"] = "Vyhovující" if total_count >= pozadovano else f"Chybí {abs(int(pozadovano - total_count))} zk."
     return target_df
 
 def process_cely_objekt_sheet(key_df, target_df, lab_text):
@@ -41,14 +50,11 @@ def process_cely_objekt_sheet(key_df, target_df, lab_text):
         zkouska = row.get("druh zkoušky")
         if pd.isna(material) or pd.isna(zkouska):
             continue
-        count = count_matches(lab_text, material, zkouska)
+        count = count_matches_advanced(lab_text, material, zkouska, "")
         target_df.at[i, "C"] = count
         pozadovano = row.get("B")
         if pd.notna(pozadovano):
-            if count >= pozadovano:
-                target_df.at[i, "D"] = "Vyhovující"
-            else:
-                target_df.at[i, "D"] = f"Chybí {abs(int(pozadovano - count))} zk."
+            target_df.at[i, "D"] = "Vyhovující" if count >= pozadovano else f"Chybí {abs(int(pozadovano - count))} zk."
     return target_df
 
 if pdf_file and xlsx_file:
