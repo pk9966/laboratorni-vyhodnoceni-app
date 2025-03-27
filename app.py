@@ -46,12 +46,12 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
         text_stanice = col_8.lower()
         text_konstrukce = col_11.lower()
         text_zkouska = col_14.lower()
-        
+
         konstrukce_ok = contains_similar(text_konstrukce, konstrukce)
         stanice_ok = any(s in text_stanice for s in staniceni)
         zkouska_ok = any(z in text_zkouska for z in druhy_zk)
 
-                        debug_status = f"⛔ | konstrukce_ok={konstrukce_ok}, zkouska_ok={zkouska_ok}, stanice_ok={stanice_ok}"
+        debug_status = f"⛔ | konstrukce_ok={konstrukce_ok}, zkouska_ok={zkouska_ok}, stanice_ok={stanice_ok}"
 
         if konstrukce_ok and zkouska_ok and stanice_ok:
             match_count += 1
@@ -60,6 +60,7 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
             st.markdown(f"{debug_status} → `Staničení: {text_stanice}` | `Konstrukce: {text_konstrukce}` | `Zkouška: {text_zkouska}`")
     st.markdown(f"**Celkem nalezeno:** `{match_count}` záznamů")
     return match_count
+
 
 def process_op_sheet(key_df, target_df, lab_text):
     if "D" not in target_df.columns:
@@ -85,6 +86,7 @@ def process_op_sheet(key_df, target_df, lab_text):
             target_df.at[i, "E"] = "Vyhovující" if total_count >= pozadovano else f"Chybí {abs(int(pozadovano - total_count))} zk."
     return target_df
 
+
 def process_cely_objekt_sheet(key_df, target_df, lab_text):
     for i, row in target_df.iterrows():
         material = row.get("materiál")
@@ -102,7 +104,8 @@ if pdf_file and xlsx_file:
     lab_text = extract_text_from_pdf(pdf_file)
 
     st.subheader("📄 Náhled textu z PDF")
-    st.text("\n".join(lab_text.splitlines()[:15]))
+    st.text("
+".join(lab_text.splitlines()[:15]))
 
     try:
         xlsx_bytes = xlsx_file.read()
