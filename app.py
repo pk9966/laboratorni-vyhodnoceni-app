@@ -1,4 +1,5 @@
 import streamlit as st
+st.set_page_config(page_title="Vyhodnocení laboratorního deníku")
 st.write("Streamlit import OK")
 import pandas as pd
 st.write("Pandas import OK")
@@ -9,7 +10,6 @@ st.write("io import OK")
 from openpyxl import load_workbook
 st.write("openpyxl import OK")
 
-st.set_page_config(page_title="Vyhodnocení laboratorního deníku")
 st.title("Vyhodnocení laboratorního deníku")
 
 pdf_file = st.file_uploader("Nahraj laboratorní deník (PDF)", type="pdf")
