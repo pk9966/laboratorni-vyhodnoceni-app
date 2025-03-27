@@ -94,9 +94,9 @@ if pdf_file and xlsx_file:
                 ws = workbook[sheet_name]
                 for i, row in processed.iterrows():
                     if "D" in processed.columns:
-                        ws[f"D{i+2}"] = row["D"]
+                        ws.cell(row=i+2, column=4, value=row.get("D"))
                     if "E" in processed.columns:
-                        ws[f"E{i+2}"] = row["E"]
+                        ws.cell(row=i+2, column=5, value=row.get("E"))
 
         st.success("Vyhodnocení dokončeno. Stáhni výsledný soubor níže.")
         st.download_button(
