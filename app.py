@@ -24,9 +24,13 @@ def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 def contains_similar(text, keyword, threshold=0.6):
-    words = text.lower().split()
+    text = text.lower()
     keyword = keyword.lower()
-    return any(similar(word, keyword) >= threshold for word in words)
+    # Pokud je konstrukce přímo podřetězec, bereme jako shodu
+    if keyword in text:
+        return True
+    # Jinak zkoušíme fuzzy porovnání celého textu s konstrukcí
+    return similar(text, keyword) >= threshold
 
 def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
     druhy_zk = [z.strip().lower() for z in str(zkouska_raw).split(",") if z.strip()]
