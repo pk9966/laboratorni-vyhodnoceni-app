@@ -3,7 +3,6 @@ import pandas as pd
 import fitz  # PyMuPDF
 import io
 from openpyxl import load_workbook
-from openpyxl.writer.excel import save_virtual_workbook
 
 st.set_page_config(page_title="Vyhodnocení laboratorního deníku")
 st.title("Vyhodnocení laboratorního deníku")
@@ -98,10 +97,13 @@ if pdf_file and xlsx_file:
                     if "E" in processed.columns:
                         ws.cell(row=i+2, column=5, value=row.get("E"))
 
+        output = io.BytesIO()
+        workbook.save(output)
+
         st.success("Vyhodnocení dokončeno. Stáhni výsledný soubor níže.")
         st.download_button(
             label="📥 Stáhnout výsledný Excel",
-            data=save_virtual_workbook(workbook),
+            data=output.getvalue(),
             file_name="vyhodnoceni_vystup.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
