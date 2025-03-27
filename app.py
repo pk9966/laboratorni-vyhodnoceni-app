@@ -23,7 +23,7 @@ def extract_text_from_pdf(file):
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
-def contains_similar(text, keyword, threshold=0.6):
+def contains_similar(text, keyword, threshold=0.4):
     text = text.lower()
     keyword = keyword.lower()
     if keyword in text:
@@ -31,9 +31,9 @@ def contains_similar(text, keyword, threshold=0.6):
     return similar(text, keyword) >= threshold
 
 def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
-    st.write(f"🔍 Hledám konstrukci: '{konstrukce}'")
-    st.write(f"🔍 Druhy zkoušek: {zkouska_raw}")
-    st.write(f"🔍 Staničení: {stanice_raw}")
+    st.markdown(f"---\n🔍 **Konstrukce:** `{konstrukce}`")
+    st.markdown(f"🔍 **Zkoušky:** `{zkouska_raw}`")
+    st.markdown(f"🔍 **Staničení:** `{stanice_raw}`")
     druhy_zk = [z.strip().lower() for z in str(zkouska_raw).split(",") if z.strip()]
     staniceni = [s.strip().lower() for s in str(stanice_raw).split(",") if s.strip()]
     match_count = 0
@@ -44,7 +44,8 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
         stanice_ok = any(s in line_lower for s in staniceni)
         if konstrukce_ok and zkouska_ok and stanice_ok:
             match_count += 1
-            st.write(f"✅ Nalezeno: '{line}'")
+            st.markdown(f"✅ **Shoda nalezena:** `{line.strip()}`")
+    st.markdown(f"**Celkem nalezeno:** `{match_count}` záznamů")
     return match_count
 
 def process_op_sheet(key_df, target_df, lab_text):
@@ -52,7 +53,6 @@ def process_op_sheet(key_df, target_df, lab_text):
         target_df["D"] = 0
     if "E" not in target_df.columns:
         target_df["E"] = ""
-
     for i in range(1, len(target_df)):
         row = target_df.iloc[i]
         zasyp = str(row.iloc[0])
@@ -87,6 +87,9 @@ def process_cely_objekt_sheet(key_df, target_df, lab_text):
 
 if pdf_file and xlsx_file:
     lab_text = extract_text_from_pdf(pdf_file)
+
+    st.subheader("📄 Náhled textu z PDF")
+    st.text("\n".join(lab_text.splitlines()[:15]))
 
     try:
         xlsx_bytes = xlsx_file.read()
