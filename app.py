@@ -2,8 +2,8 @@ import streamlit as st
 st.write("Streamlit import OK")
 import pandas as pd
 st.write("Pandas import OK")
-import fitz  # PyMuPDF
-st.write("fitz (PyMuPDF) import OK")
+import pdfplumber
+st.write("pdfplumber import OK")
 import io
 st.write("io import OK")
 from openpyxl import load_workbook
@@ -14,6 +14,10 @@ st.title("Vyhodnocení laboratorního deníku")
 
 pdf_file = st.file_uploader("Nahraj laboratorní deník (PDF)", type="pdf")
 xlsx_file = st.file_uploader("Nahraj soubor Klíč.xlsx", type="xlsx")
+
+def extract_text_from_pdf(file):
+    with pdfplumber.open(file) as pdf:
+        return "\n".join(page.extract_text() or "" for page in pdf.pages)
 
 def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
     druhy_zk = [z.strip().lower() for z in str(zkouska_raw).split(",") if z.strip()]
@@ -64,7 +68,7 @@ def process_cely_objekt_sheet(key_df, target_df, lab_text):
     return target_df
 
 if pdf_file and xlsx_file:
-    lab_text = "\n".join(page.get_text() for page in fitz.open(stream=pdf_file.read(), filetype="pdf"))
+    lab_text = extract_text_from_pdf(pdf_file)
 
     try:
         xlsx_bytes = xlsx_file.read()
