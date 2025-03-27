@@ -104,8 +104,7 @@ if pdf_file and xlsx_file:
     lab_text = extract_text_from_pdf(pdf_file)
 
     st.subheader("📄 Náhled textu z PDF")
-    st.text("
-".join(lab_text.splitlines()[:15])))
+    st.text("".join(lab_text.splitlines()[:15])))
 
     try:
         xlsx_bytes = xlsx_file.read()
