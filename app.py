@@ -105,6 +105,7 @@ if pdf_file and xlsx_file:
 
     st.subheader("📄 Náhled textu z PDF")
     st.text("
+".join(lab_text.splitlines()[:15]))  # opravený výpis PDF náhledu
 ".join(lab_text.splitlines()[:15]))
 
     try:
