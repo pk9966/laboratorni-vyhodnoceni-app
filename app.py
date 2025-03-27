@@ -33,14 +33,22 @@ def contains_similar(text, keyword, threshold=0.6):
     return similar(text, keyword) >= threshold
 
 def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
+    st.write(f"
+🔍 Hledám konstrukci: '{konstrukce}'")
+    st.write(f"🔍 Druhy zkoušek: {zkouska_raw}")
+    st.write(f"🔍 Staničení: {stanice_raw}")
     druhy_zk = [z.strip().lower() for z in str(zkouska_raw).split(",") if z.strip()]
     staniceni = [s.strip().lower() for s in str(stanice_raw).split(",") if s.strip()]
-    return sum(
-        1 for line in text.splitlines()
-        if contains_similar(line, konstrukce)
-        and any(z in line.lower() for z in druhy_zk)
-        and any(s in line.lower() for s in staniceni)
-    )
+        match_count = 0
+    for line in text.splitlines():
+        line_lower = line.lower()
+        konstrukce_ok = contains_similar(line, konstrukce)
+        zkouska_ok = any(z in line_lower for z in druhy_zk)
+        stanice_ok = any(s in line_lower for s in staniceni)
+        if konstrukce_ok and zkouska_ok and stanice_ok:
+            match_count += 1
+            st.write(f"✅ Nalezeno: '{line}'")
+    return match_count
 
 def process_op_sheet(key_df, target_df, lab_text):
     if "D" not in target_df.columns:
