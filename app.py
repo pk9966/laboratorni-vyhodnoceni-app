@@ -19,7 +19,7 @@ xlsx_file = st.file_uploader("Nahraj soubor Klíč.xlsx", type="xlsx")
 def extract_text_from_pdf(file):
     with fitz.open(stream=file.read(), filetype="pdf") as doc:
         return "
-".join(page.get_text() for page in doc)
+".join([page.get_text() for page in doc])
 
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
