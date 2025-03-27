@@ -2,4 +2,4 @@ streamlit
 pandas
 PyMuPDF
 xlsxwriter
-openpyxl==3.0.10
+openpyxl
