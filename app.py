@@ -47,4 +47,41 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
             st.write(f"✅ Nalezeno: '{line}'")
     return match_count
 
-# ... (zbytek skriptu zůstává beze změny)
+if pdf_file and xlsx_file:
+    lab_text = extract_text_from_pdf(pdf_file)
+
+    try:
+        xlsx_bytes = xlsx_file.read()
+        workbook = load_workbook(io.BytesIO(xlsx_bytes))
+
+        def load_sheet_df(name):
+            return pd.read_excel(io.BytesIO(xlsx_bytes), sheet_name=name)
+
+        sheet_names = workbook.sheetnames
+
+        def sheet_exists(name):
+            return name in sheet_names
+
+        op1_key = load_sheet_df("seznam zkoušek PM+LM OP1") if sheet_exists("seznam zkoušek PM+LM OP1") else pd.DataFrame()
+        op2_key = load_sheet_df("seznam zkoušek PM+LM OP2") if sheet_exists("seznam zkoušek PM+LM OP2") else pd.DataFrame()
+        cely_key = load_sheet_df("seznam zkoušek Celý objekt") if sheet_exists("seznam zkoušek Celý objekt") else pd.DataFrame()
+
+        st.subheader("Výsledky hledání zkoušek v PDF")
+
+        for key_df, label in [
+            (op1_key, "OP1"),
+            (op2_key, "OP2"),
+            (cely_key, "Celý objekt")
+        ]:
+            if not key_df.empty:
+                st.markdown(f"### 🔎 Zpracovávám list: {label}")
+                for _, row in key_df.iterrows():
+                    konstrukce = row.get("konstrukční prvek", "")
+                    zkouska = row.get("druh zkoušky", "")
+                    stanice = row.get("staničení", "")
+                    if konstrukce and zkouska:
+                        count = count_matches_advanced(lab_text, konstrukce, zkouska, stanice)
+                        st.write(f"➡ Počet shod: {count}")
+
+    except Exception as e:
+        st.error(f"Chyba při zpracování: {e}")
