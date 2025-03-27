@@ -33,13 +33,12 @@ def contains_similar(text, keyword, threshold=0.6):
     return similar(text, keyword) >= threshold
 
 def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
-    st.write(f"
-🔍 Hledám konstrukci: '{konstrukce}'")
+    st.write(f"🔍 Hledám konstrukci: '{konstrukce}'")
     st.write(f"🔍 Druhy zkoušek: {zkouska_raw}")
     st.write(f"🔍 Staničení: {stanice_raw}")
     druhy_zk = [z.strip().lower() for z in str(zkouska_raw).split(",") if z.strip()]
     staniceni = [s.strip().lower() for s in str(stanice_raw).split(",") if s.strip()]
-        match_count = 0
+            match_count = 0
     for line in text.splitlines():
         line_lower = line.lower()
         konstrukce_ok = contains_similar(line, konstrukce)
