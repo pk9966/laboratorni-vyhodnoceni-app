@@ -38,7 +38,9 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
     druhy_zk = [z.strip().lower() for z in str(zkouska_raw).split(",") if z.strip()]
     staniceni = [s.strip().lower() for s in str(stanice_raw).split(",") if s.strip()]
     match_count = 0
-    for line in text.splitlines():
+    lines = text.splitlines()
+    blocks = [" ".join(lines[i:i+6]) for i in range(0, len(lines), 6)]
+    for line in blocks:
         line_lower = line.lower()
         konstrukce_ok = contains_similar(line_lower, konstrukce)
         stanice_ok = any(s in line_lower for s in staniceni)
