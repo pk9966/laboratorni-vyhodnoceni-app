@@ -1,8 +1,13 @@
 import streamlit as st
+st.write("Streamlit import OK")
 import pandas as pd
+st.write("Pandas import OK")
 import fitz  # PyMuPDF
+st.write("fitz (PyMuPDF) import OK")
 import io
+st.write("io import OK")
 from openpyxl import load_workbook
+st.write("openpyxl import OK")
 
 st.set_page_config(page_title="Vyhodnocení laboratorního deníku")
 st.title("Vyhodnocení laboratorního deníku")
@@ -62,7 +67,6 @@ if pdf_file and xlsx_file:
     lab_text = "\n".join(page.get_text() for page in fitz.open(stream=pdf_file.read(), filetype="pdf"))
 
     try:
-        # Uložení originálního XLSX pro zachování formátování
         xlsx_bytes = xlsx_file.read()
         workbook = load_workbook(io.BytesIO(xlsx_bytes))
 
