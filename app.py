@@ -51,7 +51,8 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
         stanice_ok = any(s in text_stanice for s in staniceni)
         zkouska_ok = any(z in text_zkouska for z in druhy_zk)
 
-                debug_status = f"⛔ | konstrukce_ok={konstrukce_ok}, zkouska_ok={zkouska_ok}, stanice_ok={stanice_ok}"
+                        debug_status = f"⛔ | konstrukce_ok={konstrukce_ok}, zkouska_ok={zkouska_ok}, stanice_ok={stanice_ok}"
+
         if konstrukce_ok and zkouska_ok and stanice_ok:
             match_count += 1
             st.markdown(f"✅ **Shoda nalezena:** `Staničení: {text_stanice}` | `Konstrukce: {text_konstrukce}` | `Zkouška: {text_zkouska}`")
