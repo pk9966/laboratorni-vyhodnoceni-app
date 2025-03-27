@@ -9,6 +9,7 @@ import io
 st.write("io import OK")
 from openpyxl import load_workbook
 st.write("openpyxl import OK")
+from difflib import SequenceMatcher
 
 st.title("Vyhodnocení laboratorního deníku")
 
@@ -19,12 +20,20 @@ def extract_text_from_pdf(file):
     with pdfplumber.open(file) as pdf:
         return "\n".join(page.extract_text() or "" for page in pdf.pages)
 
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
+
+def contains_similar(text, keyword, threshold=0.6):
+    words = text.lower().split()
+    keyword = keyword.lower()
+    return any(similar(word, keyword) >= threshold for word in words)
+
 def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
     druhy_zk = [z.strip().lower() for z in str(zkouska_raw).split(",") if z.strip()]
     staniceni = [s.strip().lower() for s in str(stanice_raw).split(",") if s.strip()]
     return sum(
         1 for line in text.splitlines()
-        if konstrukce.lower() in line.lower()
+        if contains_similar(line, konstrukce)
         and any(z in line.lower() for z in druhy_zk)
         and any(s in line.lower() for s in staniceni)
     )
