@@ -48,18 +48,15 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
         text_zkouska = col_14.lower()
         
         konstrukce_ok = contains_similar(text_konstrukce, konstrukce)
-        zkouska_ok = any(z in text_zkouska for z in druhy_zk)
         stanice_ok = any(s in text_stanice for s in staniceni)
+        zkouska_ok = any(z in text_zkouska for z in druhy_zk)
 
-        konstrukce_ok = contains_similar(relevant_text, konstrukce)
-        zkouska_ok = any(z in relevant_text for z in druhy_zk)
-        stanice_ok = any(s in relevant_text for s in staniceni)
-        debug_status = f"⛔ | konstrukce_ok={konstrukce_ok}, zkouska_ok={zkouska_ok}, stanice_ok={stanice_ok}"
+                debug_status = f"⛔ | konstrukce_ok={konstrukce_ok}, zkouska_ok={zkouska_ok}, stanice_ok={stanice_ok}"
         if konstrukce_ok and zkouska_ok and stanice_ok:
             match_count += 1
-            st.markdown(f"✅ **Shoda nalezena:** `{line.strip()}`")
+            st.markdown(f"✅ **Shoda nalezena:** `Staničení: {text_stanice}` | `Konstrukce: {text_konstrukce}` | `Zkouška: {text_zkouska}`")
         else:
-            st.markdown(f"{debug_status} → `{line.strip()}`")
+            st.markdown(f"{debug_status} → `Staničení: {text_stanice}` | `Konstrukce: {text_konstrukce}` | `Zkouška: {text_zkouska}`")
     st.markdown(f"**Celkem nalezeno:** `{match_count}` záznamů")
     return match_count
 
