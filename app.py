@@ -39,16 +39,8 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
     staniceni = [s.strip().lower() for s in str(stanice_raw).split(",") if s.strip()]
     match_count = 0
     lines = text.splitlines()
-    blocks = []
-    current_block = []
-    for line in lines:
-        # Nový záznam začíná, pokud obsahuje 'QUALIFORM' nebo datumový formát (např. 05/KZ/2022)
-        if ('QUALIFORM' in line or '/KZ/' in line) and current_block:
-            blocks.append(" ".join(current_block))
-            current_block = []
-        current_block.append(line.strip())
-    if current_block:
-        blocks.append(" ".join(current_block))
+    blocks = [" ".join(lines[i:i+10]) for i in range(0, len(lines), 10)]
+    
     
     for line in blocks:
         line_lower = line.lower()
