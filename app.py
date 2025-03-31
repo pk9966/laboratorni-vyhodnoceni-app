@@ -49,15 +49,7 @@ def count_matches_advanced(text, konstrukce, zkouska_raw, stanice_raw):
         current_block.append(line.strip())
     if current_block:
         blocks.append(" ".join(current_block))
-    current_block = []
-    for line in lines:
-        if line.strip().isdigit() and len(line.strip()) == 4:
-            if current_block:
-                blocks.append(" ".join(current_block))
-                current_block = []
-        current_block.append(line.strip())
-    if current_block:
-        blocks.append(" ".join(current_block))
+    
     for line in blocks:
         line_lower = line.lower()
         konstrukce_ok = contains_similar(line_lower, konstrukce)
